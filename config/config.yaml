@@ -1,0 +1,31 @@
+defaults:
+  - data: mnist_small
+  - model: mlp_small
+  - _self_
+
+device: [0] # relevant devices are given by list (-1 is cpu) # this might not work on cluster
+device_torch: "cuda:0"
+seed: 2
+
+epoch:
+  start: 0
+  end: 50
+  frequ_to_save: 1
+
+optim:
+  adam:
+    beta1: 0.9
+    beta2: 0.999
+    eps: 1e-8
+  lr: 4e-4 # note that init_lr is (lr * batch_size / 256) 
+  wd: 1e-4 # wd = lambda / N with lambda precision of prior Gaussian, N number of training samples
+  bs: 256
+  n_workers: 3
+
+ckpt: # rename state-dict
+  name: "epoch=29-step=7050"
+  version: 0
+
+hydra:
+  job:
+    chdir: False  

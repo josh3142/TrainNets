@@ -1,0 +1,8 @@
+name: redwine
+is_classification: False
+path: null
+param:
+  H: 1
+  W: 1
+  C: 11
+  n_class: 1

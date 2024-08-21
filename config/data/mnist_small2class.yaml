@@ -1,0 +1,8 @@
+name: mnist_small2class
+path: "../../data"
+is_classification: True
+param:
+  H: 7
+  W: 7
+  C: 1
+  n_class: 2
