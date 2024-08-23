@@ -83,4 +83,7 @@ class NetPred(pl.LightningModule):
     def predict_step(self, batch: Tuple, batch_idx: int) -> Tensor:
         """ Returns true value and predictions """
         X, Y = batch
-        return self(X)
+        logit = self.model(X)
+        if self.is_classification:
+            logit = nn.functional.softmax(logit, dim=-1)
+        return logit

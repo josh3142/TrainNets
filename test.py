@@ -2,6 +2,7 @@ import os
 os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
 import torch
+from torch import Tensor
 from torch.utils.data import DataLoader
 import lightning.pytorch as pl
 
@@ -15,6 +16,15 @@ from pathlib import Path
 from model.model import get_model
 from dataset.dataset import get_dataset
 from net import NetPred
+
+
+def map_label_vector_to_one_hot_encoded_vector(
+        n_class: int, 
+        label_vector: Tensor
+    ) -> Tensor:
+    """ Converts label vector to one-hot encoded vector. """
+    return torch.eye(n_class)[label_vector]
+
 
 @hydra.main(config_path = "config", config_name = "config")
 def run_main(cfg: DictConfig) -> None:
@@ -45,7 +55,7 @@ def run_main(cfg: DictConfig) -> None:
     dl = DataLoader(
         get_dataset(cfg.data.name, cfg.data.path, train=False),
         shuffle=False,
-        batch_size=10#cfg.optim.bs
+        batch_size=cfg.optim.bs
     )
 
     # get true values
@@ -53,6 +63,8 @@ def run_main(cfg: DictConfig) -> None:
     for _, y in dl:
         Y.append(y)
     Y = torch.cat(Y)
+    if cfg.data.is_classification:
+        Y = map_label_vector_to_one_hot_encoded_vector(cfg.data.param.n_class, Y)
 
     # train model
     trainer = pl.Trainer(
@@ -64,10 +76,11 @@ def run_main(cfg: DictConfig) -> None:
         Y_hat = trainer.predict(model=model, dataloaders=dl)
         Y_hat = torch.cat(Y_hat)
     Y, Y_hat = Y.numpy(), Y_hat.numpy()
+    assert Y.shape==Y_hat.shape, "Y and Y_hat need to have the same shape"
+
     
     # store dataframe
-    n_col = Y.shape[1]
-    assert n_col== Y_hat.shape[1], "Y and Y_hat need to have the same number of columns"
+    n_col = Y.shape[-1]
     Y_name = [f"Y{i}" for i in range(n_col)]
     Y_hat_name = [f"Y_hat{i}" for i in range(n_col)]
     column_name = Y_name + Y_hat_name
