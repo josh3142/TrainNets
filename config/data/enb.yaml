@@ -1,0 +1,8 @@
+name: enb
+is_classification: False
+path: null
+param:
+  H: 1
+  W: 1
+  C: 8
+  n_class: 2
