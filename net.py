@@ -78,3 +78,9 @@ class NetPred(pl.LightningModule):
     def test_step(self, batch: Tuple, batch_idx: int) -> None:
         loss = self.get_loss(batch)
         self.log("test_loss", loss)
+
+    
+    def predict_step(self, batch: Tuple, batch_idx: int) -> Tensor:
+        """ Returns true value and predictions """
+        X, Y = batch
+        return self(X)

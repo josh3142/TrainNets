@@ -1,0 +1,81 @@
+import os 
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
+
+import torch
+from torch.utils.data import DataLoader
+import lightning.pytorch as pl
+
+import pandas as pd
+import numpy as np
+
+import hydra 
+from omegaconf import DictConfig 
+from pathlib import Path
+
+from model.model import get_model
+from dataset.dataset import get_dataset
+from net import NetPred
+
+@hydra.main(config_path = "config", config_name = "config")
+def run_main(cfg: DictConfig) -> None:
+
+    # https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html
+    torch.set_float32_matmul_precision("high") 
+
+    path = "results/" + \
+        f"{cfg.data.name}/{cfg.model.name}" + \
+        f"/bs{cfg.optim.bs}lr{cfg.optim.lr}/seed{cfg.seed}"
+    weights = os.path.join(
+        path,
+        f"lightning_logs/version_{cfg.ckpt.version}/checkpoints/{cfg.ckpt.name}"
+    )
+
+    # load model
+    model = get_model(cfg.model.name, 
+        **(dict(cfg.model.param) | dict(cfg.data.param)))
+    model = NetPred.load_from_checkpoint(weights, 
+        model=model, 
+        optimizer=None,
+        objective=None,
+        is_classification=cfg.data.is_classification
+    )
+    model.eval()
+
+   # initialize dataset and dataloader
+    dl = DataLoader(
+        get_dataset(cfg.data.name, cfg.data.path, train=False),
+        shuffle=False,
+        batch_size=10#cfg.optim.bs
+    )
+
+    # get true values
+    Y =[]
+    for _, y in dl:
+        Y.append(y)
+    Y = torch.cat(Y)
+
+    # train model
+    trainer = pl.Trainer(
+        default_root_dir=path, 
+        precision="32", 
+        devices=cfg.device
+    )
+    with torch.no_grad():
+        Y_hat = trainer.predict(model=model, dataloaders=dl)
+        Y_hat = torch.cat(Y_hat)
+    Y, Y_hat = Y.numpy(), Y_hat.numpy()
+    
+    # store dataframe
+    n_col = Y.shape[1]
+    assert n_col== Y_hat.shape[1], "Y and Y_hat need to have the same number of columns"
+    Y_name = [f"Y{i}" for i in range(n_col)]
+    Y_hat_name = [f"Y_hat{i}" for i in range(n_col)]
+    column_name = Y_name + Y_hat_name
+    
+    array = np.concatenate([Y, Y_hat], axis=-1)
+    df = pd.DataFrame(array, columns=column_name)
+    df.to_csv(os.path.join(path,"pred.csv"), index=False)
+
+
+if __name__ == "__main__":
+    run_main()
