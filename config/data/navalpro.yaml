@@ -1,0 +1,8 @@
+name: navalpro
+is_classification: False
+path: "../../../SharedData/AI/datasets/naval_propulsion/navalplantmaintenance.csv"
+param:
+  H: 1
+  W: 1
+  C: 14
+  n_class: 2

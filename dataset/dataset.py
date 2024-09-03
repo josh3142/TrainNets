@@ -12,6 +12,7 @@ from dataset.redwine import get_redwine, get_redwine_trafo
 from dataset.protein import get_protein, get_protein_trafo
 from dataset.california import get_california, get_california_trafo
 from dataset.enb import get_enb, get_enb_trafo
+from dataset.navalprop import get_navalpro, get_navalpro_trafo
 
 
 def get_dataset(
@@ -98,6 +99,13 @@ def get_dataset(
         else:
             _, _, X, Y = get_enb()
         data = DatasetGenerator(X, Y, transform=get_enb_trafo(train))
+
+    elif name.lower()=="navalpro":
+        if train:
+            X, Y, _, _ = get_navalpro(path)
+        else:
+            _, _, X, Y = get_navalpro(path)
+        data = DatasetGenerator(X, Y, transform=get_navalpro_trafo(train))
 
     else:
         raise NotImplementedError(f"Dataset {name} is not implemented.")
