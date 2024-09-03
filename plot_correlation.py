@@ -26,14 +26,15 @@ def run_main(cfg: DictConfig) -> None:
 
     for i in range(len(Y_names)//2):
         Y_name, Y_hat_name = Y_names[i], Y_names[len(Y_names)//2 + i]
+        x_min = min(np.min(df[Y_name]), np.min(df[Y_hat_name]))
         x_max = max(np.max(df[Y_name]), np.max(df[Y_hat_name])) 
-        x = np.arange(x_max)
+        x = np.arange(x_min, x_max, step=(x_max - x_min) / 100)
         
         plt.tight_layout()
         plt.title(r"Correlation of predictions $\hat{Y}$ to true value $Y$.")
         plt.scatter(df[Y_name], df[Y_hat_name], c="orange", marker="x", 
             label=fr"$\hat{{Y}}_{i}/Y_{i}$")
-        plt.plot(x, x, color="black", linestyle="--", label="optimum")
+        plt.plot(x, x, color="black", linestyle="-", label="optimum")
         plt.xlabel(fr"$Y_{i}$", color="black")
         plt.ylabel(rf"$\hat{{Y}}_{i}$", color="black")
         plt.legend()
