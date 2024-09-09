@@ -1,6 +1,6 @@
 import torch
 from torch import nn, Tensor
-from torchvision.datasets import MNIST, CIFAR10
+from torchvision.datasets import MNIST, FashionMNIST, CIFAR10
 from torchvision.transforms import (Compose, Normalize, ToTensor, Resize,
     RandomHorizontalFlip, RandomGrayscale, RandomApply, RandomResizedCrop)
 from torch.utils.data import Dataset
@@ -44,6 +44,13 @@ def get_dataset(
             return Compose([ToTensor(), Normalize((0.5, ), (0.5,))])
         
         data = MNIST(path, train=train, transform=transform(), 
+            download=True)
+        
+    elif name.lower()=="fashionmnist":
+        def transform() -> Callable:
+            return Compose([ToTensor(), Normalize((0.5, ), (0.5,))])
+        
+        data = FashionMNIST(path, train=train, transform=transform(), 
             download=True)
         
     elif name.lower()=="mnist_small":        

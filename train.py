@@ -28,7 +28,7 @@ def run_main(cfg: DictConfig) -> None:
         f"{cfg.data.name}/{cfg.model.name}" + \
         f"/bs{cfg.optim.bs}lr{cfg.optim.lr}/seed{cfg.seed}"
     Path(path).mkdir(parents = True, exist_ok = True)
-
+    
     # initialize predictive model class
     model = get_model(cfg.model.name, 
         **(dict(cfg.model.param) | dict(cfg.data.param)))
