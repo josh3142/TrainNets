@@ -14,9 +14,12 @@ def run_main(cfg: DictConfig) -> None:
         f"lightning_logs/version_{cfg.ckpt.version}/checkpoints"
     
     files = os.listdir(path)
+    print(f"All the checkpoints to be saved:\n{files}")
     for file in files:
         try:
             file = file.split(".")[0]
+            # remove =, because it cannot be read by hydra
+            file_new = file.replace("=", "") 
             state_dict = torch.load(
                 os.path.join(path, f"{file}.ckpt"), 
                 map_location="cpu"
@@ -26,7 +29,7 @@ def run_main(cfg: DictConfig) -> None:
             )
             torch.save(
                 state_dict_rename_keys, 
-                os.path.join(path, f"{file}_dict.ckpt")
+                os.path.join(path, f"{file_new}_dict.ckpt")
             )
         except:
             pass
