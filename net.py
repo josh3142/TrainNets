@@ -26,7 +26,8 @@ class NetPred(pl.LightningModule):
         self.optimizer = optimizer
         self.objective = objective if objective is not None else None
         self.is_classification = is_classification
-
+        self.save_hyperparameters()
+        
 
     def __call__(self, *args) -> nn.Module:
         return self.model(*args)

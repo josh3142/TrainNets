@@ -10,8 +10,9 @@ import lightning.pytorch as pl
 from torch import nn
 
 import hydra 
-from omegaconf import DictConfig 
+from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
+import json
 
 from model.model import get_model
 from dataset.dataset import get_dataset
@@ -28,6 +29,9 @@ def run_main(cfg: DictConfig) -> None:
         f"{cfg.data.name}/{cfg.model.name}" + \
         f"/bs{cfg.optim.bs}lr{cfg.optim.lr}/seed{cfg.seed}"
     Path(path).mkdir(parents = True, exist_ok = True)
+    # store hyperparameters
+    with open(os.path.join(path, "hyperparameters.txt"), "w") as file:
+        file.write(cfg)
     
     # initialize predictive model class
     model = get_model(cfg.model.name, 
@@ -48,7 +52,7 @@ def run_main(cfg: DictConfig) -> None:
         is_classification=cfg.data.is_classification
     )
 
-    # initialize dataset and dataloader
+   # initialize dataset and dataloader
    # get data
     dl_train = DataLoader(
         get_dataset(cfg.data.name, cfg.data.path, train=True), 
@@ -68,6 +72,9 @@ def run_main(cfg: DictConfig) -> None:
         gradient_clip_val=1.0,
         check_val_every_n_epoch=1)
     trainer.fit(model=model, train_dataloaders=dl_train, val_dataloaders=dl_test)
+    # store hyperparameters
+    with open(os.path.join(trainer.logger.log_dir, "hyperparameters.json"), "w") as file:
+        json.dump(OmegaConf.to_container(cfg, resolve=True), file, indent=4)
 
 
 if __name__ == "__main__":
