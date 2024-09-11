@@ -21,6 +21,15 @@ optim:
   wd: 1e-4 # wd = lambda / N with lambda precision of prior Gaussian, N number of training samples
   bs: 256
   n_workers: 3
+  
+swa: # swa method
+  enable: False # should swa be applied
+  epoch:
+    start: 0.5 # from which epoch should swa be applied
+    frequ_to_save: 1 # frequency to store models
+    annealing: 0 # number of annealing epochs
+  n_save: 20 # Saves best n models
+  lr: 4e-2 # swa learning rate
 
 ckpt: # rename state-dict
   name: "epoch=29-step=7050"
