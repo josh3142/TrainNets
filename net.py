@@ -6,8 +6,6 @@ import lightning.pytorch as pl
 from typing import Tuple, Optional
 
 
-
-
 class NetPred(pl.LightningModule):
     """ Classification network class. """
 
@@ -15,6 +13,7 @@ class NetPred(pl.LightningModule):
         model: nn.Module, 
         optimizer: Optional[optim.Optimizer], 
         objective: Optional[nn.Module],
+        scheduler: Optional[optim.lr_scheduler],
         is_classification: bool=True
         ) -> None:
         """
@@ -25,6 +24,7 @@ class NetPred(pl.LightningModule):
         self.model = model
         self.optimizer = optimizer
         self.objective = objective if objective is not None else None
+        self.scheduler = scheduler
         self.is_classification = is_classification
         self.save_hyperparameters()
         
@@ -32,9 +32,24 @@ class NetPred(pl.LightningModule):
     def __call__(self, *args) -> nn.Module:
         return self.model(*args)
     
-
+    
     def configure_optimizers(self):
-        return self.optimizer
+        if self.scheduler is None:
+            return {
+                'optimizer': self.optimizer,
+                'monitor': 'val_loss'
+            }
+        else:
+            return {
+                'optimizer': self.optimizer,
+                'lr_scheduler': {
+                    "scheduler": self.scheduler,
+                    "interval": "step", # Update learning rate every step (batch)
+                    "frequency": 1 # This ensures the scheduler is stepped every batch
+                },
+                'monitor': 'val_loss'
+            }
+
     
 
     def get_loss(self, logit: Tensor, Y: Tensor) -> float:
@@ -62,6 +77,9 @@ class NetPred(pl.LightningModule):
         if self.is_classification:
             accuracy = self.get_accuracy(logit, Y)
             self.log("train_acc", accuracy)
+        # log learning rate
+        lr = self.optimizers().param_groups[0]["lr"]
+        self.log("lr", lr)
 
         return loss
 

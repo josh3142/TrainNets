@@ -21,6 +21,10 @@ optim:
   wd: 1e-4 # wd = lambda / N with lambda precision of prior Gaussian, N number of training samples
   bs: 256
   n_workers: 3
+  scheduler:
+    enable: True
+    warmup: 0.1 # warmup phase measured in epoch.end
+    decay: 0.5 # start to decay
   
 swa: # swa method
   enable: False # should swa be applied

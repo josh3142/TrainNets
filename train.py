@@ -5,6 +5,7 @@ os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
 
 import torch
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import LinearLR, SequentialLR, PolynomialLR
 import lightning.pytorch as pl
 
 from torch import nn
@@ -56,11 +57,33 @@ def run_main(cfg: DictConfig) -> None:
             betas        = (cfg.optim.adam.beta1, cfg.optim.adam.beta2),
             eps          = cfg.optim.adam.eps,
             weight_decay = cfg.optim.wd)
+    
+    if cfg.optim.scheduler.enable:
+        n_steps = int(len(dl_train))
+        warmup_iters = int(cfg.optim.scheduler.warmup * cfg.epoch.end * n_steps) 
+        decay_iters = int(cfg.epoch.end * n_steps * (1 - cfg.optim.scheduler.decay))
+        decay_start = int(n_steps * cfg.epoch.end * cfg.optim.scheduler.decay)
+        warmup = LinearLR(optimizer, 
+            start_factor=0.0001,
+            end_factor=1,
+            total_iters=warmup_iters
+        )
+        decay  = PolynomialLR(optimizer, 
+            total_iters=decay_iters)
+        scheduler = SequentialLR(
+            optimizer=optimizer,
+            schedulers=[warmup, decay],
+            milestones=[decay_start]    
+        )
+        scheduler = scheduler
+    else:
+        scheduler = None
 
     model = NetPred(
         model=model,
         optimizer=optimizer,
         objective=objective,
+        scheduler=scheduler,
         is_classification=cfg.data.is_classification
     )
 

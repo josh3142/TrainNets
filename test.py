@@ -59,6 +59,7 @@ def run_main(cfg: DictConfig) -> None:
         model=model, 
         optimizer=None,
         objective=None,
+        scheduler=None,
         is_classification=cfg.data.is_classification
     )
     model.eval()
