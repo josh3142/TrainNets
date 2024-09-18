@@ -18,6 +18,7 @@ import json
 from model.model import get_model
 from dataset.dataset import get_dataset
 from net import NetPred
+from utils import make_deterministic
 
 # Define a custom callback to delete older checkpoints
 class KeepLastNCheckpoints(pl.Callback):
@@ -53,6 +54,7 @@ class KeepLastNCheckpoints(pl.Callback):
 def run_main(cfg: DictConfig) -> None:
     # https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html
     torch.set_float32_matmul_precision("high") 
+    make_deterministic(cfg.seed)
 
     path = "results/" + \
         f"{cfg.data.name}/{cfg.model.name}" + \

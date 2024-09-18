@@ -17,6 +17,7 @@ import json
 from model.model import get_model
 from dataset.dataset import get_dataset
 from net import NetPred
+from utils import make_deterministic
 
 
 @hydra.main(config_path = "config", config_name = "config")
@@ -24,6 +25,7 @@ def run_main(cfg: DictConfig) -> None:
 
     # https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html
     torch.set_float32_matmul_precision("high") 
+    make_deterministic(cfg.seed)
 
     path = "results/" + \
         f"{cfg.data.name}/{cfg.model.name}" + \
