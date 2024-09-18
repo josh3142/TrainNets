@@ -13,6 +13,7 @@ from dataset.protein import get_protein, get_protein_trafo
 from dataset.california import get_california, get_california_trafo
 from dataset.enb import get_enb, get_enb_trafo
 from dataset.navalprop import get_navalpro, get_navalpro_trafo
+from dataset.imagenet import get_ImageNet
 
 
 def get_dataset(
@@ -78,6 +79,25 @@ def get_dataset(
         idcs = torch.logical_or(data.targets == 0, data.targets == 1)
         X, Y = data.data.numpy()[idcs, ...], data.targets[idcs] 
         data = DatasetGenerator(X, Y, transform=transform())
+
+    elif name.lower()=="imagenet10":
+        # preprocessing according to 
+        # https://pytorch.org/vision/main/models/generated/torchvision.models.resnet18.html
+        # The loaded data is resized to 256**3 and cropped to 224**3
+        def transform(train: bool=True) -> Callable:
+            trafo = [ToTensor(),
+                    Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))]
+            if train:
+                trafo += [
+                    RandomHorizontalFlip(p=0.5)
+                ]
+
+            return Compose(trafo)
+        if train:
+            X, Y, _, _ =  get_ImageNet(path, n_class=10)
+        else:
+            _, _, X, Y =  get_ImageNet(path, n_class=10)
+        data = DatasetGenerator(X, Y, transform=transform(), is_classification=True)
 
     elif name.lower()=="redwine":
         if train:

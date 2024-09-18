@@ -1,0 +1,8 @@
+name: imagenet10
+path: "../../data"
+is_classification: True
+param:
+  H: 224
+  W: 224
+  C: 3
+  n_class: 10
