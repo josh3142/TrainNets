@@ -31,10 +31,20 @@ def run_main(cfg: DictConfig) -> None:
         f"{cfg.data.name}/{cfg.model.name}" + \
         f"/bs{cfg.optim.bs}lr{cfg.optim.lr}/seed{cfg.seed}"
     Path(path).mkdir(parents = True, exist_ok = True)
-    # store hyperparameters
-    with open(os.path.join(path, "hyperparameters.txt"), "w") as file:
-        file.write(cfg)
     
+   # initialize dataset and dataloader
+   # get data
+    dl_train = DataLoader(
+        get_dataset(cfg.data.name, cfg.data.path, train=True), 
+        shuffle=True,
+        batch_size=cfg.optim.bs
+    )
+    dl_test = DataLoader(
+        get_dataset(cfg.data.name, cfg.data.path, train=False),
+        shuffle=False,
+        batch_size=cfg.optim.bs
+    )
+
     # initialize predictive model class
     model = get_model(cfg.model.name, 
         **(dict(cfg.model.param) | dict(cfg.data.param)))
@@ -54,30 +64,20 @@ def run_main(cfg: DictConfig) -> None:
         is_classification=cfg.data.is_classification
     )
 
-   # initialize dataset and dataloader
-   # get data
-    dl_train = DataLoader(
-        get_dataset(cfg.data.name, cfg.data.path, train=True), 
-        shuffle=True,
-        batch_size=cfg.optim.bs
-    )
-    dl_test = DataLoader(
-        get_dataset(cfg.data.name, cfg.data.path, train=False),
-        shuffle=False,
-        batch_size=cfg.optim.bs
-    )
-
     # train model
     trainer = pl.Trainer(default_root_dir=path, precision="32", 
         devices=cfg.device, 
         max_epochs=cfg.epoch.end,
         gradient_clip_val=1.0,
-        check_val_every_n_epoch=1)
+        check_val_every_n_epoch=1,
+        log_every_n_steps=5,
+        enable_progress_bar=True)
     trainer.fit(model=model, train_dataloaders=dl_train, val_dataloaders=dl_test)
-    # store hyperparameters
-    with open(os.path.join(trainer.logger.log_dir, "hyperparameters.json"), "w") as file:
-        json.dump(OmegaConf.to_container(cfg, resolve=True), file, indent=4)
 
+    # store hyperparameters
+    with open(os.path.join(
+        trainer.logger.log_dir, "hyperparameters.json"), "w") as file:
+        json.dump(OmegaConf.to_container(cfg, resolve=True), file, indent=4)
 
 if __name__ == "__main__":
     run_main()

@@ -25,6 +25,18 @@ def map_label_vector_to_one_hot_encoded_vector(
     """ Converts label vector to one-hot encoded vector. """
     return torch.eye(n_class)[label_vector]
 
+def get_accuracy(Y_hat: Tensor, Y: Tensor) -> float:
+    """ 
+    Computes the number of correct predictions.  
+    Args:
+        Y_hat: Either logits or softmax predictions of the model.
+        Y: True classes
+    """
+    assert len(Y.shape) == 1
+    Y_hat_correct = np.sum(np.equal(np.argmax(Y_hat, axis=1), Y)) / len(Y)
+
+    return Y_hat_correct
+
 
 @hydra.main(config_path = "config", config_name = "config")
 def run_main(cfg: DictConfig) -> None:
@@ -59,12 +71,14 @@ def run_main(cfg: DictConfig) -> None:
     )
 
     # get true values
-    Y =[]
+    Y_idcs =[]
     for _, y in dl:
-        Y.append(y)
-    Y = torch.cat(Y)
+        Y_idcs.append(y)
+    Y_idcs = torch.cat(Y_idcs)
     if cfg.data.is_classification:
-        Y = map_label_vector_to_one_hot_encoded_vector(cfg.data.param.n_class, Y)
+        Y = map_label_vector_to_one_hot_encoded_vector(cfg.data.param.n_class, Y_idcs)
+    else:
+        Y = Y_idcs
 
     # train model
     trainer = pl.Trainer(
@@ -88,6 +102,10 @@ def run_main(cfg: DictConfig) -> None:
     array = np.concatenate([Y, Y_hat], axis=-1)
     df = pd.DataFrame(array, columns=column_name)
     df.to_csv(os.path.join(path,"pred.csv"), index=False)
+
+    if cfg.data.is_classification:
+        with open(os.path.join(path, "accuracy.txt"), "w") as file:
+            file.write(f"Accuracy: {get_accuracy(Y_hat, Y_idcs.numpy())}")
 
 
 if __name__ == "__main__":
