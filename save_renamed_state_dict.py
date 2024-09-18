@@ -23,13 +23,20 @@ def run_main(cfg: DictConfig) -> None:
             state_dict = torch.load(
                 os.path.join(path, f"{file}.ckpt"), 
                 map_location="cpu"
-            )["state_dict"]
+            )
+            state_dict_red = state_dict["state_dict"]
             state_dict_rename_keys = OrderedDict(
-                (key.replace("model.", ""), value) for key, value in state_dict.items()
+                (key.replace("model.", ""), value) 
+                for key, value in state_dict_red.items()
             )
             torch.save(
                 state_dict_rename_keys, 
                 os.path.join(path, f"{file_new}_dict.ckpt")
+            )
+            # rename original dict
+            torch.save(
+                state_dict,
+                os.path.join(path, f"{file_new}.ckpt")
             )
         except:
             pass
