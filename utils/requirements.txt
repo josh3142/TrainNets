@@ -1,0 +1,12 @@
+ipython==8.31
+numpy>=1.26
+pandas>=2.2.3
+openml>=0.15
+matplotlib>=3.10
+torch>=2.5.1
+torchvision>=0.20
+hydra-core>=1.3
+tqdm>=4.67
+lightning>=2.5
+tensorboard>=2.18
+cupy-cuda12x==13.1.0
