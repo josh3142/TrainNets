@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 import hydra 
-from omegaconf import DictConfig 
+from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
 
 from model.model import get_model
@@ -40,9 +40,13 @@ def get_accuracy(Y_hat: Tensor, Y: Tensor) -> float:
 
 @hydra.main(config_path = "config", config_name = "config")
 def run_main(cfg: DictConfig) -> None:
-
     # https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html
     torch.set_float32_matmul_precision("high") 
+    # if key is not in cfg structure add it with trivial value
+    if not OmegaConf.select(cfg.model.param, "init_var_y"):
+        OmegaConf.update(
+            cfg, "model.param.init_var_y", 0, merge=True, force_add=True
+        )
 
     path = "results/" + \
         f"{cfg.data.name}/{cfg.model.name}" + \
@@ -51,6 +55,12 @@ def run_main(cfg: DictConfig) -> None:
         path,
         f"lightning_logs/version_{cfg.ckpt.version}/checkpoints/{cfg.ckpt.name}"
     )
+    # load variance of model
+    try:
+        var_y = model.get_variance().item()
+    except:
+        print("Model has no variance stored. No, variance is used.")
+        var_y = 0
 
     # load model
     model = get_model(cfg.model.name, 
@@ -60,7 +70,8 @@ def run_main(cfg: DictConfig) -> None:
         optimizer=None,
         objective=None,
         scheduler=None,
-        is_classification=cfg.data.is_classification
+        is_classification=cfg.data.is_classification,
+        init_var_y=var_y
     )
     model.eval()
 

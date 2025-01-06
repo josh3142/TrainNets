@@ -8,8 +8,6 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import LinearLR, SequentialLR, PolynomialLR
 import lightning.pytorch as pl
 
-from torch import nn
-
 import hydra 
 from omegaconf import DictConfig, OmegaConf
 from pathlib import Path
@@ -18,15 +16,20 @@ import json
 from model.model import get_model
 from dataset.dataset import get_dataset
 from net import NetPred
-from utils import make_deterministic
+from utils import make_deterministic, get_objective, get_objective_name
 
 
 @hydra.main(config_path = "config", config_name = "config")
 def run_main(cfg: DictConfig) -> None:
-
     # https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html
     torch.set_float32_matmul_precision("high") 
     make_deterministic(cfg.seed)
+
+    # if key is not in cfg structure add it with trivial value
+    if not OmegaConf.select(cfg.model.param, "init_var_y"):
+        OmegaConf.update(
+            cfg, "model.param.init_var_y", 0, merge=True, force_add=True
+        )
 
     path = "results/" + \
         f"{cfg.data.name}/{cfg.model.name}" + \
@@ -51,8 +54,11 @@ def run_main(cfg: DictConfig) -> None:
         **(dict(cfg.model.param) | dict(cfg.data.param)))
 
     # initialize objective, optimizer and net class,
-    init_lr   = cfg.optim.lr * cfg.optim.bs / 256   
-    objective = nn.CrossEntropyLoss() if cfg.data.is_classification else nn.MSELoss()
+    init_lr   = cfg.optim.lr * cfg.optim.bs / 256 
+    objective = get_objective(get_objective_name(
+        cfg.data.is_classification, 
+        train_variance=False if cfg.model.param.init_var_y==0 else True
+        ))
     optimizer = torch.optim.Adam(model.parameters(), init_lr,
             betas        = (cfg.optim.adam.beta1, cfg.optim.adam.beta2),
             eps          = cfg.optim.adam.eps,
@@ -84,7 +90,8 @@ def run_main(cfg: DictConfig) -> None:
         optimizer=optimizer,
         objective=objective,
         scheduler=scheduler,
-        is_classification=cfg.data.is_classification
+        is_classification=cfg.data.is_classification,
+        init_var_y=cfg.model.param.init_var_y
     )
 
     # train model

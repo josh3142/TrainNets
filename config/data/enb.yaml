@@ -6,3 +6,4 @@ param:
   W: 1
   C: 8
   n_class: 2
+  init_var_y: 0

@@ -21,9 +21,15 @@ class MLP(nn.Module):
         4. x = linear(n_hidden, n_hidden)(x)
         5. y = linear(n_hidden, y_size)
     Args:
-        n_class (int): number of classes etc.
-        n_hidden (int): n_hidden of each layer
-        n_layer (int): number of layers
+        n_hidden: number of hidden units per layer
+        n_layer: number of hidden layers
+        H: height dimension 
+        W: width dimension
+        C: colour dimension
+        n_class: number of output classes
+        activation: Type of activation function
+        init_var_y: Initialized variance for the output. If `init_var_y==0` 
+            no variance for the output is learned
     """
 
     def __init__(
@@ -35,6 +41,7 @@ class MLP(nn.Module):
             C: int=1,
             n_class: int=1, 
             activation: Optional[str]="relu", 
+            init_var_y: int=1,
             **kwargs
         ):
         super().__init__()
@@ -42,6 +49,8 @@ class MLP(nn.Module):
         self.n_class  = n_class
         self.n_hidden = n_hidden
         self.n_layer  = n_layer
+        self.init_var_y = init_var_y
+
         if activation == "relu":
             self.activation = nn.ReLU()
         elif activation == "sine":
@@ -50,6 +59,15 @@ class MLP(nn.Module):
             self.activation = nn.Identity()
         else:
             raise NotImplementedError()
+        
+        # initialize variance as a positive number
+        if init_var_y < 0:
+            raise ValueError("Variance has to be initialized with a positive "
+                f"number, but it is {init_var_y}.")
+        InverseSoftplus = lambda sigma: torch.log(torch.exp(sigma) - 1 )
+        self.variance_param = nn.Parameter(
+            InverseSoftplus(torch.tensor([init_var_y]))
+        )
         
         self.features     = self._make_layers(self.n_input, self.n_hidden, 
             self.n_layer, self.activation)
@@ -75,6 +93,10 @@ class MLP(nn.Module):
                 layers += [layer_lin]
         return nn.Sequential(*layers)
     
+    def get_variance(self):
+        return nn.Softplus()(self.variance_param)
+    
+
 if __name__ == "__main__":
     x, y = 1, 1
     n_hidden=10

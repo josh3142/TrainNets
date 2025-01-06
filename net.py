@@ -14,7 +14,8 @@ class NetPred(pl.LightningModule):
         optimizer: Optional[optim.Optimizer], 
         objective: Optional[nn.Module],
         scheduler: Optional[optim.lr_scheduler],
-        is_classification: bool=True
+        is_classification: bool=True,
+        init_var_y: int=0
         ) -> None:
         """
         None should only be used, if a subset of methods is relevant that don't
@@ -26,6 +27,7 @@ class NetPred(pl.LightningModule):
         self.objective = objective if objective is not None else None
         self.scheduler = scheduler
         self.is_classification = is_classification
+        self.y_variance = init_var_y
         self.save_hyperparameters()
         
 
@@ -51,9 +53,16 @@ class NetPred(pl.LightningModule):
             }
 
     
-
-    def get_loss(self, logit: Tensor, Y: Tensor) -> float:
-        return self.objective(logit, Y)
+    def get_loss(self, logit, Y):
+        if self.y_variance==0:
+            loss = self.objective(logit, Y)
+        else:
+            b = logit.shape[0]
+            self.y_variance = self.model.get_variance()
+            variance = self.y_variance.expand(b, -1)
+            assert variance.shape==logit.shape, "Variance has wrong shape."
+            loss = self.objective(logit, Y, variance)
+        return loss
 
 
     def get_accuracy(self, Y_hat: Tensor, Y: Tensor) -> float:
@@ -80,6 +89,9 @@ class NetPred(pl.LightningModule):
         # log learning rate
         lr = self.optimizers().param_groups[0]["lr"]
         self.log("lr", lr)
+        # log variance of output y if it is used
+        if not self.y_variance==0:
+            self.log("train_y_variance", self.y_variance)
 
         return loss
 
@@ -92,10 +104,14 @@ class NetPred(pl.LightningModule):
         if self.is_classification:
             accuracy = self.get_accuracy(logit, Y)
             self.log("val_acc", accuracy)
+        if not self.y_variance==0:
+            self.log("val_y_variance", self.y_variance)
 
 
     def test_step(self, batch: Tuple, batch_idx: int) -> None:
-        loss = self.get_loss(batch)
+        X, Y = batch
+        logit = self.model(X)
+        loss = self.get_loss(logit, Y)
         self.log("test_loss", loss)
 
     

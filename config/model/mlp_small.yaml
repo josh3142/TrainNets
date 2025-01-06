@@ -2,4 +2,6 @@ name: mlp_small
 param:
   activation: relu
   n_layer: 2
-  n_hidden: 512 
+  n_hidden: 512
+  init_var_y: 1. # if init_variance==0, no variance for the output y is learned
+                 # variance cannot be negative.
