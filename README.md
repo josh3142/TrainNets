@@ -6,11 +6,11 @@ Different models and datasets can easily been added and accessed via [Hydra](htt
 
 ## Requirements
 
-Create a virtual environment with `python==3.10`. You can create a predefined `conda` environment with
+Create a virtual environment with `python==3.11`. You can create a predefined `conda` environment with
 ```setup
 conda env create -f utils/create_env.yml
 ```
-Open the environment (e.g. `conda activate EiV`) and install the required packages via `pip`.  
+Open the environment (e.g. `conda activate TrainNet`) and install the required packages via `pip`.  
 
 ```setup
 pip install -r utils/requirements.txt
@@ -20,7 +20,7 @@ pip install -r utils/requirements.txt
 
 Examples on how to run the code for specific settings are given in the folder `scripts`. Each bash script trains a specific neural network on the given dataset. 
 1. Train the neural network (`train.py`)
-2. The dictionary of the neural network can be transformed in canoncial form (standard keys) (`save_renamed_state_dict.py`)
+2. The dictionary of the neural network can be transformed in canoncial form (standard keys) (`save_renamed_state_dict.py`) Note that pytorch wraps one layer around the model. Hence the keys have to be renamed such that they can be used by a model that isn't used in the `pytorch lightning` environment.
 3. A dataframe with predictions can be created (`test.py`)
 4. Some visualizations can be plotted to obtain an intuition of the quality of the trained neural network (`plot_correlation.py`)
 
@@ -34,7 +34,7 @@ python -m dataset.enb
 
 ## Disclaimer
 
-The software is made available "as is" free of cost. The Author assumes no responsibility whatsoever for its use by other parties, and makes no guarantees, expressed or implied, about its quality, reliability, safety, suitability or any other characteristic. In no event will the Author be liable for any direct, indirect or consequential damage arising in connection
+This software was developed at Physikalisch-Technische Bundesanstalt (PTB). The software is made available "as is" free of cost. PTB assumes no responsibility whatsoever for its use by other parties, and makes no guarantees, expressed or implied, about its quality, reliability, safety, suitability or any other characteristic. In no event will PTB be liable for any direct, indirect or consequential damage arising in connection
 
 
 ## Licence
