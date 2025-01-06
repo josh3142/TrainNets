@@ -1,5 +1,5 @@
 data=mnist
-end=2
+end=20
 model=cnn_small
 lr="4e-3"
 warmup="0.1"

@@ -51,6 +51,7 @@ python plot_correlation.py -m \
 # swa_lr="1e0,1e-1,1e-2,1e-3,1e-4"
 
 # python train_continue.py -m \
+#     seed=$seed \
 #     data=$data epoch.end=$end \
 #     optim.bs=$batch_size optim.lr=$lr\
 #     model.param.n_layer=$n_layer model.param.n_hidden=$n_hidden \

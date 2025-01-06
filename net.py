@@ -57,9 +57,9 @@ class NetPred(pl.LightningModule):
         if self.y_variance==0:
             loss = self.objective(logit, Y)
         else:
-            b = logit.shape[0]
+            bs, n_c = logit.shape
             self.y_variance = self.model.get_variance()
-            variance = self.y_variance.expand(b, -1)
+            variance = self.y_variance.expand(bs, n_c)
             assert variance.shape==logit.shape, "Variance has wrong shape."
             loss = self.objective(logit, Y, variance)
         return loss
