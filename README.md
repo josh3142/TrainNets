@@ -20,14 +20,14 @@ pip install -r utils/requirements.txt
 
 Examples on how to run the code for specific settings are given in the folder `scripts`. Each bash script trains a specific neural network on the given dataset. 
 1. Train the neural network (`train.py`)
-2. The dictionary of the neural network can be transformed in canoncial form (standard keys) (`save_renamed_state_dict.py`) Note that pytorch wraps one layer around the model. Hence the keys have to be renamed such that they can be used by a model that isn't used in the `pytorch lightning` environment.
+2. The dictionary of the neural network can be transformed in canoncial form (standard keys) (`save_renamed_state_dict.py`) Note that `pytorch lightning` wraps one layer around the model. Hence the keys have to be renamed such that they can be used by a model that isn't used in the `pytorch lightning` environment.
 3. A dataframe with predictions can be created (`test.py`)
 4. Some visualizations can be plotted to obtain an intuition of the quality of the trained neural network (`plot_correlation.py`)
 
 
 ### Call scripts from subfolder
 
-To run the script `enb` as a main script. Navigate to the main folder and run the command
+To run the file `enb.py` as `__main__`. Navigate to the main folder and run the command
 ```python 
 python -m dataset.enb
 ```
