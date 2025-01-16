@@ -41,7 +41,7 @@ class MLP(nn.Module):
             C: int=1,
             n_class: int=1, 
             activation: Optional[str]="relu", 
-            init_var_y: int=1,
+            init_var_y: int=0,
             **kwargs
         ):
         super().__init__()
@@ -64,10 +64,11 @@ class MLP(nn.Module):
         if init_var_y < 0:
             raise ValueError("Variance has to be initialized with a positive "
                 f"number, but it is {init_var_y}.")
-        InverseSoftplus = lambda sigma: torch.log(torch.exp(sigma) - 1 )
-        self.variance_param = nn.Parameter(
-            InverseSoftplus(torch.tensor([init_var_y]))
-        )
+        elif init_var_y > 0:
+            InverseSoftplus = lambda sigma: torch.log(torch.exp(sigma) - 1 )
+            self.variance_param = nn.Parameter(
+                InverseSoftplus(torch.tensor([init_var_y]))
+            )
         
         self.features     = self._make_layers(self.n_input, self.n_hidden, 
             self.n_layer, self.activation)
