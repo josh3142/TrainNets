@@ -1,0 +1,16 @@
+name: synthsinus
+is_classification: False
+path: "dataset/Sinus_NTrain100.npz"
+param:
+  H: 1
+  W: 1
+  C: 1
+  n_class: 1
+# data set is generated with the fct
+# def get_sin(a: float, k: float, c: float) -> Callable:
+#     return lambda x: a * np.sin(2 * np.pi * (x / (2 * np.pi) * k + c)) \
+#         * np.cos(np.pi  * (x / (2 * np.pi)))
+# a, k, c = 1, 1/4, 0
+# the standard deviation of the data is
+# sigma = 0.1
+# This information is provided in the npz file.
