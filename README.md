@@ -23,7 +23,10 @@ Examples on how to run the code for specific settings are given in the folder `s
 2. The dictionary of the neural network can be transformed in canoncial form (standard keys) (`save_renamed_state_dict.py`) Note that `pytorch lightning` wraps one layer around the model. Hence the keys have to be renamed such that they can be used by a model that isn't used in the `pytorch lightning` environment.
 3. A dataframe with predictions can be created (`test.py`)
 4. Some visualizations can be plotted to obtain an intuition of the quality of the trained neural network (`plot_correlation.py`)
-
+```
+bash scripts/mlp_mnist.sh
+```
+starts the above sequence form an multi-layer perceptron trained on `MNIST`.
 
 ### Call scripts from subfolder
 
