@@ -1,0 +1,8 @@
+name: snelson
+is_classification: False
+path: "dataset/snelson_data_set"
+param:
+  H: 1
+  W: 1
+  C: 1
+  n_class: 1
