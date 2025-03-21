@@ -35,7 +35,7 @@ def run_main(cfg: DictConfig) -> None:
         f"{cfg.data.name}/{cfg.model.name}" + \
         f"/bs{cfg.optim.bs}lr{cfg.optim.lr}/seed{cfg.seed}"
     Path(path).mkdir(parents = True, exist_ok = True)
-    
+
    # initialize dataset and dataloader
    # get data
     dl_train = DataLoader(
@@ -63,7 +63,7 @@ def run_main(cfg: DictConfig) -> None:
             betas        = (cfg.optim.adam.beta1, cfg.optim.adam.beta2),
             eps          = cfg.optim.adam.eps,
             weight_decay = cfg.optim.wd)
-    
+
     if cfg.optim.scheduler.enable:
         n_steps = int(len(dl_train))
         warmup_iters = int(cfg.optim.scheduler.warmup * cfg.epoch.end * n_steps) 
