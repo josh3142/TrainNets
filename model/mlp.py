@@ -55,6 +55,8 @@ class MLP(nn.Module):
             self.activation = nn.ReLU()
         elif activation == "sine":
             self.activation = Sine()
+        elif activation == "tanh":
+            self.activation = nn.Tanh()
         elif activation is None:
             self.activation = nn.Identity()
         else:

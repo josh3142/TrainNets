@@ -25,3 +25,19 @@ def get_model(name: str, **kwargs) -> nn.Module:
         raise NotImplementedError(name)
     
     return model
+
+if __name__=="__main__":
+    print("Parameters for MLP (128/2) (California): ", 
+          count_parameters(MLP(n_hidden=128, n_layer=2, C=8, n_class=1)))
+    print("Parameters for MLP (128/2) (ENB): ", 
+          count_parameters(MLP(n_hidden=128, n_layer=2, C=8, n_class=2)))
+    print("Parameters for MLP (128/2) (Naval Propulsion): ", 
+          count_parameters((MLP(n_hidden=128, n_layer=2, C=14, n_class=2))))
+    print("Parameters for MLP (128/2) (Redwine): ", 
+          count_parameters(MLP(n_hidden=128, n_layer=2, C=11, n_class=1)))
+    print("Parameters for CNN ((Fashion)MNIST): ", 
+          count_parameters(cnn_small(C=1, n_class=10)))
+    print("Parameters for ResNet9 (Cifar10): ", 
+          count_parameters(ResNet9(C=3, n_class=10)))
+    print("Parameters for ResNet18 (ImageNet10): ", 
+          count_parameters(get_model("resnet18", pretrain=False, C=3, n_class=10)))
