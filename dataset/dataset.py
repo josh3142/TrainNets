@@ -14,12 +14,14 @@ from dataset.california import get_california, get_california_trafo
 from dataset.enb import get_enb, get_enb_trafo
 from dataset.navalprop import get_navalpro, get_navalpro_trafo
 from dataset.imagenet import get_ImageNet
+from dataset.snelson import get_snelson
 
 
 def get_dataset(
         name: str, 
         path: str, 
-        train: bool, 
+        train: bool,
+        **kwargs 
     ) -> Dataset:
     
     if name.lower()=="cifar10":
@@ -140,6 +142,10 @@ def get_dataset(
             X, Y = data_loaded["X_tr"], data_loaded["Y_tr"]
         else:
             X, Y = data_loaded["X_te"], data_loaded["Y_te"]
+        data = DatasetGenerator(X, Y, transform=None, is_classification=False) 
+
+    elif name.lower()=="snelson":
+        X, Y = get_snelson(name, path, train)
         data = DatasetGenerator(X, Y, transform=None, is_classification=False) 
 
     else:
